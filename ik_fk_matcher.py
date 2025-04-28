@@ -29,6 +29,11 @@ class MatcherPanel(bpy.types.Panel):
                 operator.index = index
 
                 row = box.row()
+                row.enabled = not settings.fk_upper == '' and not settings.fk_lower == '' and not settings.fk_end == '' and not settings.ik_upper == '' and not settings.ik_lower == ''  and not settings.ik_end == ''
+                operator = row.operator(MatcherFKSnap.bl_idname, text = MatcherFKSnap.bl_label, icon = MatcherFKSnap.bl_icon)
+                operator.index = index
+
+                row = box.row()
                 row.prop(settings, 'expanded',
                     icon='TRIA_DOWN' if settings.expanded else 'TRIA_RIGHT',
                     icon_only=True, emboss=False
@@ -50,6 +55,8 @@ class MatcherPanel(bpy.types.Panel):
                     row.prop_search(settings, 'fk_lower', bpy.context.object.data, 'bones')
                     row = sub_box.row()
                     row.prop_search(settings, 'fk_end', bpy.context.object.data, 'bones')
+                    row = sub_box.row()
+                    row.prop_search(settings, 'fk_layer', bpy.context.object.data, 'collections')
 
                     row = sub_box.row()
                     row.separator()
@@ -62,6 +69,8 @@ class MatcherPanel(bpy.types.Panel):
                     row.prop_search(settings, 'ik_pole', bpy.context.object.data, 'bones')
                     row = sub_box.row()
                     row.prop_search(settings, 'ik_end', bpy.context.object.data, 'bones')
+                    row = sub_box.row()
+                    row.prop_search(settings, 'ik_layer', bpy.context.object.data, 'collections')
 
 class MatcherFKIKSettings(bpy.types.PropertyGroup):
     name: bpy.props.StringProperty(name = 'Name')
@@ -69,10 +78,12 @@ class MatcherFKIKSettings(bpy.types.PropertyGroup):
     fk_upper: bpy.props.StringProperty(name = 'FK Upper')
     fk_lower: bpy.props.StringProperty(name = 'FK Lower')
     fk_end: bpy.props.StringProperty(name = 'FK End Point')
+    fk_layer: bpy.props.StringProperty(name = 'FK Bone Collection')
     ik_upper: bpy.props.StringProperty(name = 'IK Upper')
     ik_lower: bpy.props.StringProperty(name = 'IK Lower')
-    ik_pole: bpy.props.StringProperty(name = 'FK Pole Target')
-    ik_end: bpy.props.StringProperty(name = 'FK End Point')
+    ik_pole: bpy.props.StringProperty(name = 'IK Pole Target')
+    ik_end: bpy.props.StringProperty(name = 'IK End Point')
+    ik_layer: bpy.props.StringProperty(name = 'IK Bone Collection')
 
 class MatcherSettings(bpy.types.PropertyGroup):
     entries: bpy.props.CollectionProperty(type = MatcherFKIKSettings)
@@ -104,7 +115,7 @@ class MatcherRemoveConfig(bpy.types.Operator):
     bl_icon = 'PANEL_CLOSE'
     bl_options = { 'INTERNAL', 'UNDO' }
 
-    index : bpy.props.IntProperty(default = 0)
+    index: bpy.props.IntProperty(default = 0)
 
     @classmethod
     def poll(cls, context):
@@ -117,5 +128,52 @@ class MatcherRemoveConfig(bpy.types.Operator):
         if bpy.context.object.type == 'ARMATURE':
             matcher_settings = bpy.context.object.matcher_settings
             matcher_settings.entries.remove(self.index)
+
+        return { 'FINISHED' }
+
+class MatcherFKSnap(bpy.types.Operator):
+    bl_idname = 'matcher.fksnap'
+    bl_label = 'FK'
+    bl_icon = 'BONE_DATA'
+    bl_options = { 'INTERNAL', 'UNDO' }
+
+    index: bpy.props.IntProperty(default = 0)
+
+    @classmethod
+    def poll(cls, context):
+        if bpy.context.object.type is not None:
+            return bpy.context.object.type == 'ARMATURE'
+        else:
+            return false
+
+    def execute(self, context):
+        if bpy.context.object.type == 'ARMATURE':
+            matcher_settings = bpy.context.object.matcher_settings
+            settings = bpy.context.object.matcher_settings.entries[self.index]
+            bones = bpy.context.object.pose.bones
+            collections = bpy.context.object.data.collections
+
+            # reference: Byron Mallett's IK/FK Snapping addon
+
+            fk_upper = bones[settings.fk_upper]
+            ik_upper = bones[settings.ik_upper]
+            fk_upper.matrix = ik_upper.matrix
+
+            fk_lower = bones[settings.fk_lower]
+            ik_lower = bones[settings.ik_lower]
+            fk_lower.matrix = ik_lower.matrix
+
+            fk_end = bones[settings.fk_end]
+            ik_end = bones[settings.ik_end]
+            fk_relative_to_ik = ik_end.bone.matrix_local.inverted() @ fk_end.bone.matrix_local
+            fk_end.matrix = ik_end.matrix @ fk_relative_to_ik
+
+            if not settings.fk_layer == '':
+                collections[settings.fk_layer].is_visible = True
+
+            if not settings.ik_layer == '':
+                collections[settings.ik_layer].is_visible = False
+
+            bpy.context.view_layer.update()
 
         return { 'FINISHED' }

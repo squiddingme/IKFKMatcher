@@ -43,6 +43,14 @@ class MatcherPanel(bpy.types.Panel):
                 row = box.row()
                 row.label(text = settings.name, icon = 'CONSTRAINT_BONE')
                 if not matcher_settings.lock_editing:
+                    if index > 0:
+                        operator = row.operator(MatcherMoveConfigUp.bl_idname, text = '', icon = MatcherMoveConfigUp.bl_icon)
+                        operator.index = index
+                    if index < len(matcher_settings.entries) - 1:
+                        operator = row.operator(MatcherMoveConfigDown.bl_idname, text = '', icon = MatcherMoveConfigDown.bl_icon)
+                        operator.index = index
+                    else:
+                        row.separator(factor = 3.0)
                     operator = row.operator(MatcherRemoveConfig.bl_idname, text = '', icon = MatcherRemoveConfig.bl_icon)
                     operator.index = index
 
@@ -160,6 +168,52 @@ class MatcherRemoveConfig(bpy.types.Operator):
         if bpy.context.object.type == 'ARMATURE':
             matcher_settings = bpy.context.object.matcher_settings
             matcher_settings.entries.remove(self.index)
+
+        return { 'FINISHED' }
+
+class MatcherMoveConfigUp(bpy.types.Operator):
+    bl_idname = 'matcher.move_config_up'
+    bl_label = 'Up'
+    bl_description = 'Move this IK-FK pair up the list'
+    bl_icon = 'TRIA_UP'
+    bl_options = { 'INTERNAL', 'UNDO' }
+
+    index: bpy.props.IntProperty(default = 0)
+
+    @classmethod
+    def poll(cls, context):
+        if bpy.context.object.type is not None:
+            return bpy.context.object.type == 'ARMATURE'
+        else:
+            return false
+
+    def execute(self, context):
+        if bpy.context.object.type == 'ARMATURE':
+            matcher_settings = bpy.context.object.matcher_settings
+            matcher_settings.entries.move(self.index, self.index - 1)
+
+        return { 'FINISHED' }
+
+class MatcherMoveConfigDown(bpy.types.Operator):
+    bl_idname = 'matcher.move_config_down'
+    bl_label = 'Down'
+    bl_description = 'Move this IK-FK pair down the list'
+    bl_icon = 'TRIA_DOWN'
+    bl_options = { 'INTERNAL', 'UNDO' }
+
+    index: bpy.props.IntProperty(default = 0)
+
+    @classmethod
+    def poll(cls, context):
+        if bpy.context.object.type is not None:
+            return bpy.context.object.type == 'ARMATURE'
+        else:
+            return false
+
+    def execute(self, context):
+        if bpy.context.object.type == 'ARMATURE':
+            matcher_settings = bpy.context.object.matcher_settings
+            matcher_settings.entries.move(self.index, self.index + 1)
 
         return { 'FINISHED' }
 

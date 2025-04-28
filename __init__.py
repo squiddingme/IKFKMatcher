@@ -21,6 +21,8 @@ classes = (
     MatcherSettings,
     MatcherAddConfig,
     MatcherRemoveConfig,
+    MatcherMoveConfigUp,
+    MatcherMoveConfigDown,
     MatcherFKSnap,
     MatcherIKSnap
 )

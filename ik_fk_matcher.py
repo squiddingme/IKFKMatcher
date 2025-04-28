@@ -213,7 +213,7 @@ class MatcherFKSnap(bpy.types.Operator):
                 for constraint in fk_end.constraints:
                     constraint.influence = 0.0
                     if matcher_settings.auto_key:
-                        constraint.keyframe_insert('influence', frame = frame)
+                        constraint.keyframe_insert('influence', frame = frame, group = 'IKFK Switch')
 
             bpy.context.view_layer.update()
 
@@ -274,7 +274,7 @@ class MatcherIKSnap(bpy.types.Operator):
                 for constraint in fk_end.constraints:
                     constraint.influence = 1.0
                     if matcher_settings.auto_key:
-                        constraint.keyframe_insert('influence', frame = frame)
+                        constraint.keyframe_insert('influence', frame = frame, group = 'IKFK Matching')
 
             bpy.context.view_layer.update()
 
@@ -283,7 +283,7 @@ class MatcherIKSnap(bpy.types.Operator):
 def matcher_keyframe_location(bone):
     frame = bpy.context.scene.frame_current
 
-    bone.keyframe_insert('location', frame = frame)
+    bone.keyframe_insert('location', frame = frame, group = bone.name)
 
 def matcher_keyframe_rotation(bone):
     frame = bpy.context.scene.frame_current
@@ -296,4 +296,4 @@ def matcher_keyframe_rotation(bone):
         case _:
             keyframe_type = 'rotation_euler'
 
-    bone.keyframe_insert(keyframe_type, frame = frame)
+    bone.keyframe_insert(keyframe_type, frame = frame, group = bone.name)

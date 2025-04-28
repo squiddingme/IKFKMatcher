@@ -14,14 +14,19 @@ class MatcherPanel(bpy.types.Panel):
 
     def draw(self, context):
         if bpy.context.object.type == 'ARMATURE':
-            self.layout.label(text = bpy.context.object.name, icon = 'ARMATURE_DATA')
-            self.layout.separator()
-            self.layout.operator(MatcherAddConfig.bl_idname, text = MatcherAddConfig.bl_label)
-            self.layout.separator()
+            layout = self.layout
+
+            layout.label(text = bpy.context.object.name, icon = 'ARMATURE_DATA')
+            layout.separator()
+            layout.operator(MatcherAddConfig.bl_idname, text = MatcherAddConfig.bl_label)
+            layout.separator()
 
             matcher_settings = bpy.context.object.matcher_settings
+            layout.prop(matcher_settings, 'auto_key', text = 'Auto Keyframe')
+            layout.separator()
+
             for index, settings in enumerate(matcher_settings.entries):
-                entry = self.layout.row()
+                entry = layout.row()
                 box = entry.box()
 
                 row = box.row()
@@ -93,6 +98,7 @@ class MatcherFKIKSettings(bpy.types.PropertyGroup):
 
 class MatcherSettings(bpy.types.PropertyGroup):
     entries: bpy.props.CollectionProperty(type = MatcherFKIKSettings)
+    auto_key: bpy.props.BoolProperty(default = True)
 
 class MatcherAddConfig(bpy.types.Operator):
     bl_idname = 'matcher.add_config'
@@ -180,6 +186,13 @@ class MatcherFKSnap(bpy.types.Operator):
             if not settings.ik_layer == '':
                 collections[settings.ik_layer].is_visible = False
 
+            if matcher_settings.auto_key:
+                frame = bpy.context.scene.frame_current
+                # todo: detect if quaternion or euler angles are specified
+                fk_upper.keyframe_insert('rotation_quaternion', frame = frame)
+                fk_lower.keyframe_insert('rotation_quaternion', frame = frame)
+                fk_end.keyframe_insert('rotation_quaternion', frame = frame)
+
             bpy.context.view_layer.update()
 
         return { 'FINISHED' }
@@ -227,6 +240,13 @@ class MatcherIKSnap(bpy.types.Operator):
 
             if not settings.ik_layer == '':
                 collections[settings.ik_layer].is_visible = True
+
+            if matcher_settings.auto_key:
+                frame = bpy.context.scene.frame_current
+                ik_end.keyframe_insert('location', frame = frame)
+                # todo: detect if quaternion or euler angles are specified
+                ik_end.keyframe_insert('rotation_quaternion', frame = frame)
+                ik_pole.keyframe_insert('location', frame = frame)
 
             bpy.context.view_layer.update()
 

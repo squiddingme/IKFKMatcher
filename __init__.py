@@ -1,5 +1,5 @@
 bl_info = {
-    'name': 'IK/FK Matcher',
+    'name': 'IK-FK Matcher',
     'blender': (4, 0, 0),
     'author': 'squiddingme',
     'description': 'Tools for matching IK and FK bone positions on custom rigs',

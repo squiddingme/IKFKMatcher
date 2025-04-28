@@ -17,14 +17,23 @@ class MatcherPanel(bpy.types.Panel):
             layout = self.layout
 
             layout.label(text = bpy.context.object.name, icon = 'ARMATURE_DATA')
-            layout.separator()
-            layout.operator(MatcherAddConfig.bl_idname, text = MatcherAddConfig.bl_label)
-            layout.separator()
 
             matcher_settings = bpy.context.object.matcher_settings
-            layout.prop(matcher_settings, 'auto_key')
-            layout.prop(matcher_settings, 'auto_constraint')
+            row = layout.row()
+            row.prop(matcher_settings, 'expanded',
+                icon='TRIA_DOWN' if matcher_settings.expanded else 'TRIA_RIGHT',
+                icon_only=True, emboss=False
+            )
+            row.label(text = 'Settings')
+
+            if matcher_settings.expanded:
+                box = layout.box()
+                box.prop(matcher_settings, 'lock_editing')
+                box.prop(matcher_settings, 'auto_key')
+                box.prop(matcher_settings, 'auto_constraint')
+
             layout.separator()
+            layout.operator(MatcherAddConfig.bl_idname, text = MatcherAddConfig.bl_label, icon = MatcherAddConfig.bl_icon)
 
             for index, settings in enumerate(matcher_settings.entries):
                 entry = layout.row()
@@ -32,8 +41,9 @@ class MatcherPanel(bpy.types.Panel):
 
                 row = box.row()
                 row.label(text = settings.name, icon = 'CONSTRAINT_BONE')
-                operator = row.operator(MatcherRemoveConfig.bl_idname, text = '', icon = MatcherRemoveConfig.bl_icon)
-                operator.index = index
+                if not matcher_settings.lock_editing:
+                    operator = row.operator(MatcherRemoveConfig.bl_idname, text = '', icon = MatcherRemoveConfig.bl_icon)
+                    operator.index = index
 
                 row = box.row()
                 column = row.column()
@@ -45,44 +55,45 @@ class MatcherPanel(bpy.types.Panel):
                 operator = column.operator(MatcherIKSnap.bl_idname, text = MatcherIKSnap.bl_label, icon = MatcherIKSnap.bl_icon)
                 operator.index = index
 
-                row = box.row()
-                row.prop(settings, 'expanded',
-                    icon='TRIA_DOWN' if settings.expanded else 'TRIA_RIGHT',
-                    icon_only=True, emboss=False
-                )
-                row.label(text = 'Configuration')
+                if not matcher_settings.lock_editing:
+                    row = box.row()
+                    row.prop(settings, 'expanded',
+                        icon='TRIA_DOWN' if settings.expanded else 'TRIA_RIGHT',
+                        icon_only=True, emboss=False
+                    )
+                    row.label(text = 'Configuration')
 
-                if settings.expanded:
-                    sub_box = box.box()
-                    row = sub_box.row()
+                    if settings.expanded:
+                        sub_box = box.box()
+                        row = sub_box.row()
 
-                    row.prop(settings, 'name')
+                        row.prop(settings, 'name')
 
-                    row = sub_box.row()
-                    row.separator()
+                        row = sub_box.row()
+                        row.separator()
 
-                    row = sub_box.row()
-                    row.prop_search(settings, 'fk_upper', bpy.context.object.data, 'bones')
-                    row = sub_box.row()
-                    row.prop_search(settings, 'fk_lower', bpy.context.object.data, 'bones')
-                    row = sub_box.row()
-                    row.prop_search(settings, 'fk_end', bpy.context.object.data, 'bones')
-                    row = sub_box.row()
-                    row.prop_search(settings, 'fk_layer', bpy.context.object.data, 'collections')
+                        row = sub_box.row()
+                        row.prop_search(settings, 'fk_upper', bpy.context.object.data, 'bones')
+                        row = sub_box.row()
+                        row.prop_search(settings, 'fk_lower', bpy.context.object.data, 'bones')
+                        row = sub_box.row()
+                        row.prop_search(settings, 'fk_end', bpy.context.object.data, 'bones')
+                        row = sub_box.row()
+                        row.prop_search(settings, 'fk_layer', bpy.context.object.data, 'collections')
 
-                    row = sub_box.row()
-                    row.separator()
+                        row = sub_box.row()
+                        row.separator()
 
-                    row = sub_box.row()
-                    row.prop_search(settings, 'ik_upper', bpy.context.object.data, 'bones')
-                    row = sub_box.row()
-                    row.prop_search(settings, 'ik_lower', bpy.context.object.data, 'bones')
-                    row = sub_box.row()
-                    row.prop_search(settings, 'ik_pole', bpy.context.object.data, 'bones')
-                    row = sub_box.row()
-                    row.prop_search(settings, 'ik_end', bpy.context.object.data, 'bones')
-                    row = sub_box.row()
-                    row.prop_search(settings, 'ik_layer', bpy.context.object.data, 'collections')
+                        row = sub_box.row()
+                        row.prop_search(settings, 'ik_upper', bpy.context.object.data, 'bones')
+                        row = sub_box.row()
+                        row.prop_search(settings, 'ik_lower', bpy.context.object.data, 'bones')
+                        row = sub_box.row()
+                        row.prop_search(settings, 'ik_pole', bpy.context.object.data, 'bones')
+                        row = sub_box.row()
+                        row.prop_search(settings, 'ik_end', bpy.context.object.data, 'bones')
+                        row = sub_box.row()
+                        row.prop_search(settings, 'ik_layer', bpy.context.object.data, 'collections')
 
 class MatcherFKIKSettings(bpy.types.PropertyGroup):
     name: bpy.props.StringProperty(name = 'Name')
@@ -99,12 +110,15 @@ class MatcherFKIKSettings(bpy.types.PropertyGroup):
 
 class MatcherSettings(bpy.types.PropertyGroup):
     entries: bpy.props.CollectionProperty(type = MatcherFKIKSettings)
+    expanded: bpy.props.BoolProperty(name = 'Expanded', default = True)
+    lock_editing: bpy.props.BoolProperty(name = 'Lock Editing', default = False)
     auto_key: bpy.props.BoolProperty(name = 'Auto Keyframe', default = True)
     auto_constraint: bpy.props.BoolProperty(name = 'Auto Constraint Influence', default = True)
 
 class MatcherAddConfig(bpy.types.Operator):
     bl_idname = 'matcher.add_config'
     bl_label = 'New FK-IK Pair'
+    bl_icon = 'PLUS'
     bl_options = { 'INTERNAL', 'UNDO' }
 
     @classmethod

@@ -30,10 +30,13 @@ class MatcherPanel(bpy.types.Panel):
                 operator.index = index
 
                 row = box.row()
-                row.enabled = not settings.fk_upper == '' and not settings.fk_lower == '' and not settings.fk_end == '' and not settings.ik_upper == '' and not settings.ik_lower == ''  and not settings.ik_end == ''
-                operator = row.operator(MatcherFKSnap.bl_idname, text = MatcherFKSnap.bl_label, icon = MatcherFKSnap.bl_icon)
+                column = row.column()
+                column.enabled = not settings.fk_upper == '' and not settings.fk_lower == '' and not settings.fk_end == '' and not settings.ik_upper == '' and not settings.ik_lower == '' and not settings.ik_end == ''
+                operator = column.operator(MatcherFKSnap.bl_idname, text = MatcherFKSnap.bl_label, icon = MatcherFKSnap.bl_icon)
                 operator.index = index
-                operator = row.operator(MatcherIKSnap.bl_idname, text = MatcherIKSnap.bl_label, icon = MatcherIKSnap.bl_icon)
+                column = row.column()
+                column.enabled = not settings.fk_upper == '' and not settings.fk_lower == '' and not settings.fk_end == '' and not settings.ik_pole == '' and not settings.ik_end == ''
+                operator = column.operator(MatcherIKSnap.bl_idname, text = MatcherIKSnap.bl_label, icon = MatcherIKSnap.bl_icon)
                 operator.index = index
 
                 row = box.row()
@@ -211,9 +214,7 @@ class MatcherIKSnap(bpy.types.Operator):
             ik_end.matrix = fk_end.matrix @ ik_relative_to_fk
 
             fk_upper = bones[settings.fk_upper]
-            ik_upper = bones[settings.ik_upper]
             fk_lower = bones[settings.fk_lower]
-            ik_lower = bones[settings.ik_lower]
             pv_normal = ((fk_lower.vector.normalized() + fk_upper.vector.normalized() * -1)).normalized()
 
             ik_pole = bones[settings.ik_pole]

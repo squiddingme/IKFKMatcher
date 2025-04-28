@@ -97,29 +97,30 @@ class MatcherPanel(bpy.types.Panel):
                         row.prop_search(settings, 'ik_layer', bpy.context.object.data, 'collections')
 
 class MatcherFKIKSettings(bpy.types.PropertyGroup):
-    name: bpy.props.StringProperty(name = 'Name')
+    name: bpy.props.StringProperty(name = 'Name', description = 'Your custom name for this IK-FK pair')
     expanded: bpy.props.BoolProperty(name = 'Expanded')
-    fk_upper: bpy.props.StringProperty(name = 'FK Upper')
-    fk_lower: bpy.props.StringProperty(name = 'FK Lower')
-    fk_end: bpy.props.StringProperty(name = 'FK End Point')
-    fk_layer: bpy.props.StringProperty(name = 'FK Bone Collection')
-    ik_upper: bpy.props.StringProperty(name = 'IK Upper')
-    ik_lower: bpy.props.StringProperty(name = 'IK Lower')
-    ik_pole: bpy.props.StringProperty(name = 'IK Pole Target')
-    ik_end: bpy.props.StringProperty(name = 'IK End Point')
-    ik_layer: bpy.props.StringProperty(name = 'IK Bone Collection')
+    fk_upper: bpy.props.StringProperty(name = 'FK Upper', description = 'FK upper bone (e.g. upper arm or leg)')
+    fk_lower: bpy.props.StringProperty(name = 'FK Lower', description = 'FK upper bone (e.g. upper arm or leg)')
+    fk_end: bpy.props.StringProperty(name = 'FK End Point', description = 'FK end point bone. This should have an IK constraint on it')
+    fk_layer: bpy.props.StringProperty(name = 'FK Bone Collection', description = 'Bone collection to show when switching to FK (optional)')
+    ik_upper: bpy.props.StringProperty(name = 'IK Upper', description = 'IK upper bone (e.g. upper arm or leg). For simple rigs, this can be the same as FK upper')
+    ik_lower: bpy.props.StringProperty(name = 'IK Lower', description = 'IK lower bone (e.g. lower arm or leg). For simple rigs, this can be the same as FK lower')
+    ik_pole: bpy.props.StringProperty(name = 'IK Pole Target', description = 'IK pole target')
+    ik_end: bpy.props.StringProperty(name = 'IK End Point', description = 'IK end point bone')
+    ik_layer: bpy.props.StringProperty(name = 'IK Bone Collection', description = 'Bone collection to show when switching to IK (optional)')
 
 class MatcherSettings(bpy.types.PropertyGroup):
     entries: bpy.props.CollectionProperty(type = MatcherFKIKSettings)
     expanded: bpy.props.BoolProperty(name = 'Expanded', default = True)
-    lock_editing: bpy.props.BoolProperty(name = 'Lock Editing', default = False)
-    auto_key: bpy.props.BoolProperty(name = 'Auto Keyframe', default = True)
-    auto_constraint: bpy.props.BoolProperty(name = 'Auto Constraint Influence', default = True)
-    pole_distance: bpy.props.FloatProperty(name = 'Pole Matching Distance', default = 0.2, min = 0.2)
+    lock_editing: bpy.props.BoolProperty(name = 'Lock Editing', description = 'Lock editing IK-FK pair configuration', default = False)
+    auto_key: bpy.props.BoolProperty(name = 'Auto Keyframe', description = 'Automatically keyframe bone location and rotations as well as constraint influence when switching modes', default = True)
+    auto_constraint: bpy.props.BoolProperty(name = 'Auto Constraint Influence', description = 'Automatically changes IK constraint influence when switching modes', default = True)
+    pole_distance: bpy.props.FloatProperty(name = 'Pole Matching Distance', description = 'Distance pole target should be placed from elbow/knee/etc when snapping IK to FK', default = 0.2, min = 0.2)
 
 class MatcherAddConfig(bpy.types.Operator):
     bl_idname = 'matcher.add_config'
-    bl_label = 'New FK-IK Pair'
+    bl_label = 'New IK-FK Pair'
+    bl_description = 'Add a new IK-FK pair'
     bl_icon = 'PLUS'
     bl_options = { 'INTERNAL', 'UNDO' }
 
@@ -142,6 +143,7 @@ class MatcherAddConfig(bpy.types.Operator):
 class MatcherRemoveConfig(bpy.types.Operator):
     bl_idname = 'matcher.remove_config'
     bl_label = 'Remove'
+    bl_description = 'Remove this IK-FK pair'
     bl_icon = 'PANEL_CLOSE'
     bl_options = { 'INTERNAL', 'UNDO' }
 
@@ -164,6 +166,7 @@ class MatcherRemoveConfig(bpy.types.Operator):
 class MatcherFKSnap(bpy.types.Operator):
     bl_idname = 'matcher.fksnap'
     bl_label = 'FK'
+    bl_description = 'Snap FK bone chain to IK'
     bl_icon = 'BONE_DATA'
     bl_options = { 'INTERNAL', 'UNDO' }
 
@@ -224,6 +227,7 @@ class MatcherFKSnap(bpy.types.Operator):
 class MatcherIKSnap(bpy.types.Operator):
     bl_idname = 'matcher.iksnap'
     bl_label = 'IK'
+    bl_description = 'Snap IK end point and pole to FK bones'
     bl_icon = 'BONE_DATA'
     bl_options = { 'INTERNAL', 'UNDO' }
 

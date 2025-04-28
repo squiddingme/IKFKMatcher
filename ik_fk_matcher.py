@@ -22,7 +22,8 @@ class MatcherPanel(bpy.types.Panel):
             layout.separator()
 
             matcher_settings = bpy.context.object.matcher_settings
-            layout.prop(matcher_settings, 'auto_key', text = 'Auto Keyframe')
+            layout.prop(matcher_settings, 'auto_key')
+            layout.prop(matcher_settings, 'auto_constraint')
             layout.separator()
 
             for index, settings in enumerate(matcher_settings.entries):
@@ -98,7 +99,8 @@ class MatcherFKIKSettings(bpy.types.PropertyGroup):
 
 class MatcherSettings(bpy.types.PropertyGroup):
     entries: bpy.props.CollectionProperty(type = MatcherFKIKSettings)
-    auto_key: bpy.props.BoolProperty(default = True)
+    auto_key: bpy.props.BoolProperty(name = 'Auto Keyframe', default = True)
+    auto_constraint: bpy.props.BoolProperty(name = 'Auto Constraint Influence', default = True)
 
 class MatcherAddConfig(bpy.types.Operator):
     bl_idname = 'matcher.add_config'
@@ -193,6 +195,13 @@ class MatcherFKSnap(bpy.types.Operator):
                 fk_lower.keyframe_insert('rotation_quaternion', frame = frame)
                 fk_end.keyframe_insert('rotation_quaternion', frame = frame)
 
+            if matcher_settings.auto_constraint:
+                frame = bpy.context.scene.frame_current
+                for constraint in fk_end.constraints:
+                    constraint.influence = 0.0
+                    if matcher_settings.auto_key:
+                        constraint.keyframe_insert('influence', frame = frame)
+
             bpy.context.view_layer.update()
 
         return { 'FINISHED' }
@@ -247,6 +256,13 @@ class MatcherIKSnap(bpy.types.Operator):
                 # todo: detect if quaternion or euler angles are specified
                 ik_end.keyframe_insert('rotation_quaternion', frame = frame)
                 ik_pole.keyframe_insert('location', frame = frame)
+
+            if matcher_settings.auto_constraint:
+                frame = bpy.context.scene.frame_current
+                for constraint in fk_end.constraints:
+                    constraint.influence = 1.0
+                    if matcher_settings.auto_key:
+                        constraint.keyframe_insert('influence', frame = frame)
 
             bpy.context.view_layer.update()
 

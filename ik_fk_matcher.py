@@ -43,15 +43,18 @@ class MatcherPanel(bpy.types.Panel):
                 row = box.row()
                 row.label(text = settings.name, icon = 'CONSTRAINT_BONE')
                 if not matcher_settings.lock_editing:
-                    if index > 0:
-                        operator = row.operator(MatcherMoveConfigUp.bl_idname, text = '', icon = MatcherMoveConfigUp.bl_icon)
-                        operator.index = index
-                    if index < len(matcher_settings.entries) - 1:
-                        operator = row.operator(MatcherMoveConfigDown.bl_idname, text = '', icon = MatcherMoveConfigDown.bl_icon)
-                        operator.index = index
-                    else:
-                        row.separator(factor = 3.0)
-                    operator = row.operator(MatcherRemoveConfig.bl_idname, text = '', icon = MatcherRemoveConfig.bl_icon)
+                    column = row.column()
+                    column.enabled = index > 0
+                    operator = column.operator(MatcherMoveConfigUp.bl_idname, text = '', icon = MatcherMoveConfigUp.bl_icon)
+                    operator.index = index
+
+                    column = row.column()
+                    column.enabled = index < len(matcher_settings.entries) - 1
+                    operator = column.operator(MatcherMoveConfigDown.bl_idname, text = '', icon = MatcherMoveConfigDown.bl_icon)
+                    operator.index = index
+
+                    column = row.column()
+                    operator = column.operator(MatcherRemoveConfig.bl_idname, text = '', icon = MatcherRemoveConfig.bl_icon)
                     operator.index = index
 
                 row = box.row()

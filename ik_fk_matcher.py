@@ -34,7 +34,9 @@ class MatcherPanel(bpy.types.Panel):
                 box.prop(matcher_settings, 'pole_distance')
 
             layout.separator()
-            layout.operator(MatcherAddConfig.bl_idname, text = MatcherAddConfig.bl_label, icon = MatcherAddConfig.bl_icon)
+            
+            if not matcher_settings.lock_editing:
+                layout.operator(MatcherAddConfig.bl_idname, text = MatcherAddConfig.bl_label, icon = MatcherAddConfig.bl_icon)
 
             for index, settings in enumerate(matcher_settings.entries):
                 entry = layout.row()

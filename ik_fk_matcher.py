@@ -31,6 +31,7 @@ class MatcherPanel(bpy.types.Panel):
                 box.prop(matcher_settings, 'lock_editing')
                 box.prop(matcher_settings, 'auto_key')
                 box.prop(matcher_settings, 'auto_constraint')
+                box.prop(matcher_settings, 'pole_distance')
 
             layout.separator()
             layout.operator(MatcherAddConfig.bl_idname, text = MatcherAddConfig.bl_label, icon = MatcherAddConfig.bl_icon)
@@ -114,6 +115,7 @@ class MatcherSettings(bpy.types.PropertyGroup):
     lock_editing: bpy.props.BoolProperty(name = 'Lock Editing', default = False)
     auto_key: bpy.props.BoolProperty(name = 'Auto Keyframe', default = True)
     auto_constraint: bpy.props.BoolProperty(name = 'Auto Constraint Influence', default = True)
+    pole_distance: bpy.props.FloatProperty(name = 'Pole Matching Distance', default = 0.2, min = 0.2)
 
 class MatcherAddConfig(bpy.types.Operator):
     bl_idname = 'matcher.add_config'
@@ -253,7 +255,7 @@ class MatcherIKSnap(bpy.types.Operator):
             pv_normal = ((fk_lower.vector.normalized() + fk_upper.vector.normalized() * -1)).normalized()
 
             ik_pole = bones[settings.ik_pole]
-            pv_matrix_loc = fk_lower.matrix.to_translation() + (pv_normal * -0.2)
+            pv_matrix_loc = fk_lower.matrix.to_translation() + (pv_normal * -matcher_settings.pole_distance)
             pv_matrix = Matrix.LocRotScale(pv_matrix_loc, ik_pole.matrix.to_quaternion(), None)
             ik_pole.matrix = pv_matrix
 

@@ -204,10 +204,9 @@ class MatcherFKSnap(bpy.types.Operator):
 
             if matcher_settings.auto_key:
                 frame = bpy.context.scene.frame_current
-                # todo: detect if quaternion or euler angles are specified
-                fk_upper.keyframe_insert('rotation_quaternion', frame = frame)
-                fk_lower.keyframe_insert('rotation_quaternion', frame = frame)
-                fk_end.keyframe_insert('rotation_quaternion', frame = frame)
+                matcher_keyframe_rotation(fk_upper)
+                matcher_keyframe_rotation(fk_lower)
+                matcher_keyframe_rotation(fk_end)
 
             if matcher_settings.auto_constraint:
                 frame = bpy.context.scene.frame_current
@@ -266,10 +265,9 @@ class MatcherIKSnap(bpy.types.Operator):
 
             if matcher_settings.auto_key:
                 frame = bpy.context.scene.frame_current
-                ik_end.keyframe_insert('location', frame = frame)
-                # todo: detect if quaternion or euler angles are specified
-                ik_end.keyframe_insert('rotation_quaternion', frame = frame)
-                ik_pole.keyframe_insert('location', frame = frame)
+                matcher_keyframe_location(ik_end)
+                matcher_keyframe_rotation(ik_end)
+                matcher_keyframe_location(ik_pole)
 
             if matcher_settings.auto_constraint:
                 frame = bpy.context.scene.frame_current
@@ -281,3 +279,21 @@ class MatcherIKSnap(bpy.types.Operator):
             bpy.context.view_layer.update()
 
         return { 'FINISHED' }
+
+def matcher_keyframe_location(bone):
+    frame = bpy.context.scene.frame_current
+
+    bone.keyframe_insert('location', frame = frame)
+
+def matcher_keyframe_rotation(bone):
+    frame = bpy.context.scene.frame_current
+
+    match bone.rotation_mode:
+        case 'QUATERNION':
+            keyframe_type = 'rotation_quaternion'
+        case 'AXIS_ANGLE':
+            keyframe_type = 'rotation_axis_angle'
+        case _:
+            keyframe_type = 'rotation_euler'
+
+    bone.keyframe_insert(keyframe_type, frame = frame)

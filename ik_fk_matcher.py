@@ -111,7 +111,7 @@ class MatcherPanel(bpy.types.Panel):
 
 class MatcherFKIKSettings(bpy.types.PropertyGroup):
     name: bpy.props.StringProperty(name = 'Name', description = 'Your custom name for this IK-FK pair')
-    expanded: bpy.props.BoolProperty(name = 'Expanded')
+    expanded: bpy.props.BoolProperty(name = 'Expanded', override = { 'LIBRARY_OVERRIDABLE' })
     fk_upper: bpy.props.StringProperty(name = 'FK Upper', description = 'FK upper bone (e.g. upper arm or leg)')
     fk_lower: bpy.props.StringProperty(name = 'FK Lower', description = 'FK upper bone (e.g. upper arm or leg)')
     fk_end: bpy.props.StringProperty(name = 'FK End Point', description = 'FK end point bone. This should have an IK constraint on it')
@@ -124,11 +124,11 @@ class MatcherFKIKSettings(bpy.types.PropertyGroup):
 
 class MatcherSettings(bpy.types.PropertyGroup):
     entries: bpy.props.CollectionProperty(type = MatcherFKIKSettings)
-    expanded: bpy.props.BoolProperty(name = 'Expanded', default = True)
+    expanded: bpy.props.BoolProperty(name = 'Expanded', default = True, override = { 'LIBRARY_OVERRIDABLE' })
     lock_editing: bpy.props.BoolProperty(name = 'Lock Editing', description = 'Lock editing IK-FK pair configuration', default = False)
-    auto_key: bpy.props.BoolProperty(name = 'Auto Keyframe', description = 'Automatically keyframe bone location and rotations as well as constraint influence when switching modes', default = True)
-    auto_constraint: bpy.props.BoolProperty(name = 'Auto Constraint Influence', description = 'Automatically changes IK constraint influence when switching modes', default = True)
-    pole_distance: bpy.props.FloatProperty(name = 'Pole Matching Distance', description = 'Distance pole target should be placed from elbow/knee/etc when snapping IK to FK', default = 0.2, min = 0.2)
+    auto_key: bpy.props.BoolProperty(name = 'Auto Keyframe', description = 'Automatically keyframe bone location and rotations as well as constraint influence when switching modes', default = True, override = { 'LIBRARY_OVERRIDABLE' })
+    auto_constraint: bpy.props.BoolProperty(name = 'Auto Constraint Influence', description = 'Automatically changes IK constraint influence when switching modes', default = True, override = { 'LIBRARY_OVERRIDABLE' })
+    pole_distance: bpy.props.FloatProperty(name = 'Pole Matching Distance', description = 'Distance pole target should be placed from elbow/knee/etc when snapping IK to FK', default = 0.2, min = 0.2, override = { 'LIBRARY_OVERRIDABLE' })
 
 class MatcherAddConfig(bpy.types.Operator):
     bl_idname = 'matcher.add_config'

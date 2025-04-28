@@ -1,4 +1,5 @@
 import bpy
+from mathutils import Matrix, Vector
 
 class MatcherPanel(bpy.types.Panel):
     bl_idname = 'VIEW3D_PT_matcher'
@@ -31,6 +32,8 @@ class MatcherPanel(bpy.types.Panel):
                 row = box.row()
                 row.enabled = not settings.fk_upper == '' and not settings.fk_lower == '' and not settings.fk_end == '' and not settings.ik_upper == '' and not settings.ik_lower == ''  and not settings.ik_end == ''
                 operator = row.operator(MatcherFKSnap.bl_idname, text = MatcherFKSnap.bl_label, icon = MatcherFKSnap.bl_icon)
+                operator.index = index
+                operator = row.operator(MatcherIKSnap.bl_idname, text = MatcherIKSnap.bl_label, icon = MatcherIKSnap.bl_icon)
                 operator.index = index
 
                 row = box.row()
@@ -173,6 +176,56 @@ class MatcherFKSnap(bpy.types.Operator):
 
             if not settings.ik_layer == '':
                 collections[settings.ik_layer].is_visible = False
+
+            bpy.context.view_layer.update()
+
+        return { 'FINISHED' }
+
+class MatcherIKSnap(bpy.types.Operator):
+    bl_idname = 'matcher.iksnap'
+    bl_label = 'IK'
+    bl_icon = 'BONE_DATA'
+    bl_options = { 'INTERNAL', 'UNDO' }
+
+    index: bpy.props.IntProperty(default = 0)
+
+    @classmethod
+    def poll(cls, context):
+        if bpy.context.object.type is not None:
+            return bpy.context.object.type == 'ARMATURE'
+        else:
+            return false
+
+    def execute(self, context):
+        if bpy.context.object.type == 'ARMATURE':
+            matcher_settings = bpy.context.object.matcher_settings
+            settings = bpy.context.object.matcher_settings.entries[self.index]
+            bones = bpy.context.object.pose.bones
+            collections = bpy.context.object.data.collections
+
+            # reference: Byron Mallett's IK/FK Snapping addon
+
+            fk_end = bones[settings.fk_end]
+            ik_end = bones[settings.ik_end]
+            ik_relative_to_fk = fk_end.bone.matrix_local.inverted() @ ik_end.bone.matrix_local
+            ik_end.matrix = fk_end.matrix @ ik_relative_to_fk
+
+            fk_upper = bones[settings.fk_upper]
+            ik_upper = bones[settings.ik_upper]
+            fk_lower = bones[settings.fk_lower]
+            ik_lower = bones[settings.ik_lower]
+            pv_normal = ((fk_lower.vector.normalized() + fk_upper.vector.normalized() * -1)).normalized()
+
+            ik_pole = bones[settings.ik_pole]
+            pv_matrix_loc = fk_lower.matrix.to_translation() + (pv_normal * -0.2)
+            pv_matrix = Matrix.LocRotScale(pv_matrix_loc, ik_pole.matrix.to_quaternion(), None)
+            ik_pole.matrix = pv_matrix
+
+            if not settings.fk_layer == '':
+                collections[settings.fk_layer].is_visible = False
+
+            if not settings.ik_layer == '':
+                collections[settings.ik_layer].is_visible = True
 
             bpy.context.view_layer.update()
 

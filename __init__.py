@@ -19,7 +19,8 @@ classes = (
     MatcherSettings,
     MatcherAddConfig,
     MatcherRemoveConfig,
-    MatcherFKSnap
+    MatcherFKSnap,
+    MatcherIKSnap
 )
 
 def register():

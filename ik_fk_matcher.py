@@ -26,6 +26,7 @@ class MatcherPanel(bpy.types.Panel):
                 row = box.row()
                 row.label(text = settings.name, icon = 'CONSTRAINT_BONE')
                 operator = row.operator(MatcherRemoveConfig.bl_idname, text = '', icon = MatcherRemoveConfig.bl_icon)
+                operator.index = index
 
                 row = box.row()
                 row.prop(settings, 'expanded',
@@ -103,6 +104,8 @@ class MatcherRemoveConfig(bpy.types.Operator):
     bl_icon = 'PANEL_CLOSE'
     bl_options = { 'INTERNAL', 'UNDO' }
 
+    index : bpy.props.IntProperty(default = 0)
+
     @classmethod
     def poll(cls, context):
         if bpy.context.object.type is not None:
@@ -113,6 +116,6 @@ class MatcherRemoveConfig(bpy.types.Operator):
     def execute(self, context):
         if bpy.context.object.type == 'ARMATURE':
             matcher_settings = bpy.context.object.matcher_settings
-            # matcher_settings.entries.remove()
+            matcher_settings.entries.remove(self.index)
 
         return { 'FINISHED' }

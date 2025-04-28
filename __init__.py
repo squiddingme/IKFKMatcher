@@ -1,12 +1,14 @@
 bl_info = {
-    "name": "IK/FK Matcher",
-    "blender": (2, 80, 0),
-    "category": "Object",
+    'name': 'IK/FK Matcher',
+    'blender': (4, 0, 0),
+    'author': 'squiddingme',
+    'description': 'Tools for matching IK and FK bone positions on custom rigs',
+    'category': 'Animation',
 }
 
-if "bpy" in locals():
+if 'bpy' in locals():
     from importlib import reload
-    if "ik_fk_matcher" in locals():
+    if 'ik_fk_matcher' in locals():
         reload(ik_fk_matcher)
 else:
     from .ik_fk_matcher import *
@@ -37,5 +39,5 @@ def unregister():
     del bpy.types.Object.matcher_fkik_settings
     del bpy.types.Object.matcher_settings
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     register()

@@ -213,7 +213,7 @@ class MatcherFKSnap(bpy.types.Operator):
                 for constraint in fk_end.constraints:
                     constraint.influence = 0.0
                     if matcher_settings.auto_key:
-                        constraint.keyframe_insert('influence', frame = frame, group = 'IKFK Switch')
+                        constraint.keyframe_insert('influence', frame = frame, group = settings.name + ' Switch')
 
             bpy.context.view_layer.update()
 
@@ -274,7 +274,7 @@ class MatcherIKSnap(bpy.types.Operator):
                 for constraint in fk_end.constraints:
                     constraint.influence = 1.0
                     if matcher_settings.auto_key:
-                        constraint.keyframe_insert('influence', frame = frame, group = 'IKFK Matching')
+                        constraint.keyframe_insert('influence', frame = frame, group = settings.name + ' Switch')
 
             bpy.context.view_layer.update()
 
